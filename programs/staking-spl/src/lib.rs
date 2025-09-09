@@ -1,4 +1,5 @@
 mod constants;
+mod errors;
 mod instructions;
 mod states;
 
@@ -17,5 +18,13 @@ pub mod staking_spl {
 
     pub fn deposit_spl(ctx: Context<DepositSPL>, amount: u64) -> Result<()> {
         ctx.accounts.deposit_spl(amount, ctx.bumps.stake)
+    }
+
+    pub fn claim_rewards_spl(ctx: Context<ClaimRewardsSpl>) -> Result<()> {
+        ctx.accounts.claim_rewards_spl()
+    }
+
+    pub fn close_position_spl(ctx: Context<ClosePositionSpl>) -> Result<()> {
+        ctx.accounts.close_position_spl()
     }
 }

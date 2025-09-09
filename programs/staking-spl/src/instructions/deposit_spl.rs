@@ -68,7 +68,12 @@ impl<'info> DepositSPL<'info> {
                 (rewards as u128 * PRECISION) / self.global_state.total_staked as u128;
         }
         self.global_state.last_update_time = now;
-        self.global_state.total_staked += amount;
+
+        let fee = amount * 2 / 100; // 2% fee
+        let amount_after_fee = amount - fee;
+
+        self.global_state.treasury_amount += fee;
+        self.global_state.total_staked += amount_after_fee;
 
         // update user stake
         if self.stake.amount > 0 {
@@ -80,7 +85,7 @@ impl<'info> DepositSPL<'info> {
                 self.stake.unclaimed_rewards += pending_rewards;
             }
 
-            self.stake.amount += amount;
+            self.stake.amount += amount_after_fee;
             self.stake.reward_debt = ((self.stake.amount as u128
                 * self.global_state.acc_reward_per_share)
                 / PRECISION) as u64;
@@ -88,11 +93,11 @@ impl<'info> DepositSPL<'info> {
         } else {
             self.stake.set_inner(Stake {
                 owner: self.depositor.key(),
-                amount,
+                amount: amount_after_fee,
                 start_time: now,
                 last_update_time: now,
-                reward_debt: ((amount as u128 * self.global_state.acc_reward_per_share) / PRECISION)
-                    as u64,
+                reward_debt: ((amount_after_fee as u128 * self.global_state.acc_reward_per_share)
+                    / PRECISION) as u64,
                 unclaimed_rewards: 0,
                 bump,
             });

@@ -48,6 +48,7 @@ impl<'info> Initialize<'info> {
             mint: self.mint.key(),
             vault: self.vault.key(),
             total_staked: 0,
+            treasury_amount: 0,
             acc_reward_per_share: 0,
             last_update_time: 0,
             reward_rate,

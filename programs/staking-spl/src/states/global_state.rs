@@ -9,6 +9,7 @@ pub struct GlobalState {
     pub mint: Pubkey,
     pub vault: Pubkey,
     pub total_staked: u64,
+    pub treasury_amount: u64,
     pub acc_reward_per_share: u128,
     pub last_update_time: i64,
     pub reward_rate: u64,
