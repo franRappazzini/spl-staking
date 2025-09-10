@@ -6,6 +6,7 @@ use anchor_spl::{
 
 use crate::{
     constants::{GLOBAL_STATE_SEED, PRECISION, STAKE_SEED},
+    events,
     states::{GlobalState, Stake},
 };
 
@@ -102,6 +103,13 @@ impl<'info> ClaimRewardsSpl<'info> {
             * self.global_state.acc_reward_per_share)
             / PRECISION) as u64;
         self.stake.last_update_time = now;
+
+        emit!(events::ClaimRewardsSPLEvent {
+            user: self.claimer.key(),
+            user_token_account: self.claimer_token_account.key(),
+            stake_account: self.stake.key(),
+            amount: total_rewards,
+        });
 
         Ok(())
     }

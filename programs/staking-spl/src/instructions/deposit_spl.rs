@@ -7,6 +7,7 @@ use anchor_spl::{
 
 use crate::{
     constants::{GLOBAL_STATE_SEED, PRECISION, STAKE_SEED},
+    events,
     states::{GlobalState, Stake},
 };
 
@@ -112,6 +113,15 @@ impl<'info> DepositSPL<'info> {
 
         let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), cpi_accounts);
 
-        token::transfer(cpi_ctx, amount)
+        token::transfer(cpi_ctx, amount)?;
+
+        emit!(events::DepositSPLEvent {
+            user: self.depositor.key(),
+            user_token_account: self.depositor_token_account.key(),
+            stake_account: self.stake.key(),
+            amount,
+        });
+
+        Ok(())
     }
 }

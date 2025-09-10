@@ -1,5 +1,6 @@
 mod constants;
 mod errors;
+mod events;
 mod instructions;
 mod states;
 
@@ -26,5 +27,9 @@ pub mod staking_spl {
 
     pub fn close_position_spl(ctx: Context<ClosePositionSpl>) -> Result<()> {
         ctx.accounts.close_position_spl()
+    }
+
+    pub fn withdraw_fees(ctx: Context<WithdrawFees>) -> Result<()> {
+        ctx.accounts.withdraw_fees()
     }
 }

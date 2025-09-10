@@ -7,6 +7,7 @@ use anchor_spl::{
 use crate::{
     constants::{GLOBAL_STATE_SEED, PRECISION, STAKE_SEED},
     errors::DappError,
+    events,
     states::{GlobalState, Stake},
 };
 
@@ -113,6 +114,13 @@ impl<'info> ClosePositionSpl<'info> {
 
             token::mint_to(cpi_ctx, total_rewards)?;
         }
+
+        emit!(events::ClosePositionSPLEvent {
+            user: self.closer.key(),
+            user_token_account: self.closer_token_account.key(),
+            closed_account: self.stake.key(),
+            amount: total_rewards + self.stake.amount,
+        });
 
         Ok(())
     }

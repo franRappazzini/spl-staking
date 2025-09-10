@@ -1,7 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import { bn, parseGlobalState, parseStake } from "./utils/functions";
-import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
+import {
+  getAssociatedTokenAddressSync,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
+} from "@solana/spl-token";
 
 import { Program } from "@coral-xyz/anchor";
 import SEEDS from "./utils/seeds";
@@ -30,6 +34,29 @@ describe("staking-spl", () => {
     [SEEDS.STAKE_SEED, randomWallet.publicKey.toBuffer()],
     program.programId
   );
+
+  const depositEventListener = program.addEventListener("depositSplEvent", (event, slot) => {
+    console.log("Deposit Event:", event, "at slot:", slot);
+  });
+
+  const claimEventListener = program.addEventListener("claimRewardsSplEvent", (event, slot) => {
+    console.log("Claim Rewards Event:", event, "at slot:", slot);
+  });
+
+  const closeEventListener = program.addEventListener("closePositionSplEvent", (event, slot) => {
+    console.log("Close Position Event:", event, "at slot:", slot);
+  });
+
+  const withdrawFeesEventListener = program.addEventListener("withdrawFeesEvent", (event, slot) => {
+    console.log(
+      "Withdraw Fees Event:",
+      event,
+      "at slot:",
+      slot,
+      "Amount:",
+      event.amount.toNumber()
+    );
+  });
 
   it("Is initialized!", async () => {
     const rewardRate = bn(1_902_000_000); // 1_902_000 = 6% APY
@@ -151,5 +178,29 @@ describe("staking-spl", () => {
     console.log("Stake after close:", stake);
 
     expect(stake).to.be.null;
+  });
+
+  it("Withdraw fees", async () => {
+    const tx = await program.methods
+      .withdrawFees()
+      .accounts({
+        mint: randomMintAddress.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
+
+    console.log("Withdraw fees tx signature:", tx);
+
+    const globalState = await program.account.globalState.fetch(globalStatePda);
+    console.log(parseGlobalState(globalState));
+
+    expect(globalState.treasuryAmount.toNumber()).to.equal(0);
+  });
+
+  after(async () => {
+    await program.removeEventListener(depositEventListener);
+    await program.removeEventListener(claimEventListener);
+    await program.removeEventListener(closeEventListener);
+    await program.removeEventListener(withdrawFeesEventListener);
   });
 });
